@@ -1,0 +1,11 @@
+{
+  "name": "wadrobe-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm run dev --prefix wadrobe/client",
+    "build": "npm run build --prefix wadrobe/client",
+    "start": "npm run start --prefix wadrobe/client",
+    "install:client": "npm install --prefix wadrobe/client"
+  }
+}

@@ -1,0 +1,198 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Account {
+  id                 String  @id @default(uuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?
+  access_token       String?
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(uuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  accounts      Account[]
+  sessions      Session[]
+  items         ClothingItem[]
+  outfits       Outfit[]
+  outfitPlans   OutfitPlan[]
+  packingLists  PackingList[]
+  history       OutfitHistory[]
+}
+
+model VerificationToken {
+  id         String   @id @default(uuid())
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model ClothingItem {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  imageUrl    String
+  category    Category
+  color       String?
+  brand       String?
+  season      Season?
+  occasion    Occasion?
+  
+  tags        Tag[]    @relation("ItemTags")
+  outfits     OutfitItem[]
+  packingLists PackingListItem[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Tag {
+  id       String         @id @default(uuid())
+  name     String         @unique
+  items    ClothingItem[] @relation("ItemTags")
+}
+
+model Outfit {
+  id          String       @id @default(uuid())
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String?
+  isFavorite  Boolean      @default(false)
+  season      Season?
+  occasion    Occasion?
+  
+  items       OutfitItem[]
+  history     OutfitHistory[]
+  plans       OutfitPlan[]
+  
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([userId])
+}
+
+model OutfitItem {
+  id             String       @id @default(uuid())
+  outfitId       String
+  outfit         Outfit       @relation(fields: [outfitId], references: [id], onDelete: Cascade)
+  clothingItemId String
+  clothingItem   ClothingItem @relation(fields: [clothingItemId], references: [id], onDelete: Cascade)
+
+  @@unique([outfitId, clothingItemId])
+}
+
+model OutfitPlan {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  outfitId   String
+  outfit     Outfit   @relation(fields: [outfitId], references: [id], onDelete: Cascade)
+  date       DateTime
+  notes      String?
+  
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([userId, date])
+}
+
+model OutfitHistory {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  outfitId   String
+  outfit     Outfit   @relation(fields: [outfitId], references: [id], onDelete: Cascade)
+  wornDate   DateTime
+  
+  createdAt  DateTime @default(now())
+
+  @@index([userId, wornDate])
+}
+
+model PackingList {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  destination String?
+  startDate   DateTime?
+  endDate     DateTime?
+  
+  items       PackingListItem[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model PackingListItem {
+  id             String       @id @default(uuid())
+  packingListId  String
+  packingList    PackingList  @relation(fields: [packingListId], references: [id], onDelete: Cascade)
+  clothingItemId String
+  clothingItem   ClothingItem @relation(fields: [clothingItemId], references: [id], onDelete: Cascade)
+
+  @@unique([packingListId, clothingItemId])
+}
+
+enum Category {
+  TOP
+  BOTTOM
+  FOOTWEAR
+  ACCESSORY
+  OUTERWEAR
+  ONE_PIECE
+}
+
+enum Season {
+  SPRING
+  SUMMER
+  FALL
+  WINTER
+  ALL_SEASON
+}
+
+enum Occasion {
+  CASUAL
+  FORMAL
+  PARTY
+  WORK
+  TRAVEL
+  GYM
+}
