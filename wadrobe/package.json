@@ -3,9 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "npm run dev --prefix wadrobe",
-    "build": "npm run build --prefix wadrobe",
-    "start": "npm run start --prefix wadrobe",
-    "install:client": "npm install --prefix wadrobe"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
   }
 }
